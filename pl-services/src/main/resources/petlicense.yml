@@ -1,0 +1,505 @@
+serviceMaps:
+  serviceName: pl-services
+  mappings:
+    - version: 1.0
+      description: Persists petLicense details in EG_PL_PetLicense  table
+      fromTopic: save-pl-petlicense
+      isTransaction: true
+      queryMaps:
+
+        - query: INSERT INTO eg_pl_petlicense( id, accountid, tenantid, validfrom,validto,licensetype,applicationNumber, oldlicensenumber, applicationdate, action, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+          basePath: Licenses.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.id
+
+            - jsonPath: $.Licenses.*.accountId
+
+            - jsonPath: $.Licenses.*.tenantId
+
+            - jsonPath: $.Licenses.*.validFrom
+
+            - jsonPath: $.Licenses.*.validTo
+
+            - jsonPath: $.Licenses.*.licenseType
+
+            - jsonPath: $.Licenses.*.applicationNumber
+
+            - jsonPath: $.Licenses.*.oldLicenseNumber
+
+            - jsonPath: $.Licenses.*.applicationDate
+
+            - jsonPath: $.Licenses.*.action
+
+            - jsonPath: $.Licenses.*.status
+
+            - jsonPath: $.Licenses.*.auditDetails.createdBy
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses.*.auditDetails.createdTime
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedTime
+
+
+
+        - query: INSERT INTO eg_pl_petlicensedetail( id, channel, colorId, categoryId, subcategoryId, additionaldetail, petlicenseid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+          basePath: Licenses.*.petLicenseDetail
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.channel
+            
+            - jsonPath: $.Licenses.*.petLicenseDetail.colorId
+            
+            - jsonPath: $.Licenses.*.petLicenseDetail.categoryId
+            
+            - jsonPath: $.Licenses.*.petLicenseDetail.subcategoryId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.additionalDetail
+              type: JSON
+              dbType: JSONB
+
+            - jsonPath: $.Licenses.*.id
+
+            - jsonPath: $.Licenses.*.auditDetails.createdBy
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses.*.auditDetails.createdTime
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedTime
+
+
+        - query: INSERT INTO eg_pl_owner( id,tenantid,active,institutionid, petlicensedetailid, ownertype, createdby,lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+          basePath: Licenses.*.petLicenseDetail.owners.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.uuid
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.tenantId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.userActive
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.institutionId
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].petLicenseDetail.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.ownerType
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.createdBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.createdTime
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedTime
+
+
+
+        - query: INSERT INTO eg_pl_document_owner(id,tenantId,userid,active, petLicenseDetailId, documenttype, fileStoreId,documentuid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ? ,? ,?, ?, ?, ?, ?, ?, ?, ?);
+          basePath: Licenses.*.petLicenseDetail.owners.*.documents.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.id
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].tenantId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners[*][?({id} in @.documents[*].id)].uuid
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.active
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].petLicenseDetail.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentType
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.fileStoreId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentUid
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.createdBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.createdTime
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedTime
+
+
+
+        - query: INSERT INTO eg_pl_applicationdocument( id, tenantid, active, documenttype, filestoreid, petlicensedetailid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+          basePath: Licenses.*.petLicenseDetail.applicationDocuments.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.tenantId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.active
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.documentType
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.fileStoreId
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].petLicenseDetail.id
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.createdBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.createdTime
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.lastModifiedTime
+
+
+        - query: INSERT INTO eg_pl_address( id, tenantid, doorno,street,buildingName, latitude,longitude, addressid, addressnumber,locality, type, addressline1, addressline2, landmark, city, pincode, detail, petlicensedetailid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+          basePath: Licenses.*.petLicenseDetail.address
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.tenantId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.doorNo
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.street
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.buildingName
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.latitude
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.longitude
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.addressId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.addressNumber
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.locality.code
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.type
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.addressline1
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.addressline2
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.landmark
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.city
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.pincode
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.detail
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.id
+
+            - jsonPath: $.Licenses.*.auditDetails.createdBy
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses.*.auditDetails.createdTime
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedTime
+
+
+    - version: 1.0
+      description: Update petLicense details in EG_PL_PetLicense  table
+      fromTopic: update-pl-petlicense
+      isTransaction: true
+      queryMaps:
+
+
+        - query: INSERT INTO eg_pl_petlicense_audit SELECT * FROM eg_pl_petlicense WHERE id = ?;
+          basePath: Licenses.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.id
+
+
+        - query: UPDATE eg_pl_petlicense SET licenseNumber = ?,licensetype = ?, oldlicensenumber = ?, applicationdate = ?, issueddate = ?, validfrom = ?, validto = ?, action = ?, status = ?,  lastmodifiedby = ?,  lastmodifiedtime = ? WHERE id=?;
+          basePath: Licenses.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.licenseNumber
+
+            - jsonPath: $.Licenses.*.licenseType
+
+            - jsonPath: $.Licenses.*.oldLicenseNumber
+
+            - jsonPath: $.Licenses.*.applicationDate
+
+            - jsonPath: $.Licenses.*.issuedDate
+
+            - jsonPath: $.Licenses.*.validFrom
+
+            - jsonPath: $.Licenses.*.validTo
+
+            - jsonPath: $.Licenses.*.action
+
+            - jsonPath: $.Licenses.*.status
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.id
+
+
+        - query: INSERT INTO eg_pl_petlicensedetail_audit SELECT * FROM eg_pl_petlicensedetail WHERE id = ?;
+          basePath: Licenses.*.petLicenseDetail
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.id
+
+
+
+        - query: UPDATE eg_pl_petlicensedetail SET channel = ?, colorid = ?, categoryid = ?, subcategoryid = ?, additionaldetail = ?,lastmodifiedby = ?,  lastmodifiedtime = ? WHERE id = ?;
+          basePath: Licenses.*.petLicenseDetail
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.channel
+            
+            - jsonPath: $.Licenses.*.petLicenseDetail.colorId
+            
+            - jsonPath: $.Licenses.*.petLicenseDetail.categoryId
+            
+            - jsonPath: $.Licenses.*.petLicenseDetail.subcategoryId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.additionalDetail
+              type: JSON
+              dbType: JSONB
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.id
+
+
+
+        - query: INSERT INTO eg_pl_owner( id, tenantid, active, petlicensedetailid, ownertype, createdby,lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT ON CONSTRAINT pk_eg_pl_owner DO UPDATE SET active = ?, isprimaryowner = ?, ownertype = ?, lastmodifiedby = ?,  lastmodifiedtime = ?;
+          basePath: Licenses.*.petLicenseDetail.owners.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.uuid
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.tenantId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.userActive
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].petLicenseDetail.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.ownerType
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.createdBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.createdTime
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.userActive
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.ownerType
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedTime
+
+
+        - query: INSERT INTO eg_pl_document_owner(id,tenantId,active,userid, petLicenseDetailId, documenttype, fileStoreId,documentuid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT ON CONSTRAINT pk_eg_pl_document_owner DO UPDATE SET active = ?, documenttype = ?, fileStoreId = ?,documentuid = ?, lastmodifiedby = ?,  lastmodifiedtime = ?;
+          basePath: Licenses.*.petLicenseDetail.owners.*.documents.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.id
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].tenantId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.active
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners[*][?({id} in @.documents[*].id)].uuid
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].petLicenseDetail.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentType
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.fileStoreId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentUid
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.createdBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.createdTime
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.active
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentType
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.fileStoreId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentUid
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedTime
+
+
+
+        - query: INSERT INTO eg_pl_applicationdocument( id, tenantid, active, documenttype, filestoreid, petlicensedetailid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO UPDATE SET active = ?, documenttype =?, filestoreid =?,lastmodifiedby =?, lastmodifiedtime =?;
+          basePath: Licenses.*.petLicenseDetail.applicationDocuments.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.tenantId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.active
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.documentType
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.fileStoreId
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].petLicenseDetail.id
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.createdBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.createdTime
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.active
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.documentType
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.applicationDocuments.*.fileStoreId
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.applicationDocuments[*].id)].auditDetails.lastModifiedTime
+
+
+
+        - query: UPDATE eg_pl_address SET doorno =?,street = ?,buildingName = ?, latitude =?, longitude =?, addressid =?, addressnumber =?,locality =?, type =?, addressline1 =?, addressline2 =?, landmark =?, city =?, pincode =?, detail =?,lastmodifiedby =?, lastmodifiedtime =? WHERE id =?;
+          basePath: Licenses.*.petLicenseDetail.address
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.doorNo
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.street
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.buildingName
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.latitude
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.longitude
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.addressId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.addressNumber
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.locality.code
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.type
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.addressline1
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.addressline2
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.landmark
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.city
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.pincode
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.detail
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.address.id
+
+
+
+
+
+
+    - version: 1.0
+      description: Persists petLicense details in EG_PL_PetLicense  table
+      fromTopic: update-pl-workflow
+      isTransaction: true
+      queryMaps:
+
+        - query: INSERT INTO eg_pl_petlicense_audit SELECT * FROM eg_pl_petlicense WHERE id = ?;
+          basePath: Licenses.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.id
+
+
+
+        - query: INSERT INTO eg_pl_petlicensedetail_audit SELECT * FROM eg_pl_petlicensedetail WHERE id = ?;
+          basePath: Licenses.*.petLicenseDetail
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.id
+
+
+
+        - query: INSERT INTO eg_pl_verificationdocument( id, tenantid, active, documenttype, filestoreid, petlicensedetailid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO UPDATE SET active = ?,documenttype =?, filestoreid =?, lastmodifiedby =?, lastmodifiedtime =?;
+          basePath: Licenses.*.petLicenseDetail.verificationDocuments.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.verificationDocuments.*.id
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.verificationDocuments.*.tenantId
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.verificationDocuments.*.active
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.verificationDocuments.*.documentType
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.verificationDocuments.*.fileStoreId
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.verificationDocuments[*].id)].petLicenseDetail.id
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.verificationDocuments[*].id)].auditDetails.createdBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.verificationDocuments[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.verificationDocuments[*].id)].auditDetails.createdTime
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.verificationDocuments[*].id)].auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.verificationDocuments.*.active
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.verificationDocuments.*.documentType
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.verificationDocuments.*.fileStoreId
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.verificationDocuments[*].id)].auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.verificationDocuments[*].id)].auditDetails.lastModifiedTime
+
+
+        - query: UPDATE eg_pl_petlicense SET validfrom = ?,licenseNumber =?, issueddate = ?, action = ?, status = ?,  lastmodifiedby = ?,  lastmodifiedtime = ? WHERE id=?;
+          basePath: Licenses.*
+          jsonMaps:
+            - jsonPath: $.Licenses.*.validFrom
+
+            - jsonPath: $.Licenses.*.licenseNumber
+
+            - jsonPath: $.Licenses.*.issuedDate
+
+            - jsonPath: $.Licenses.*.action
+
+            - jsonPath: $.Licenses.*.status
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.id
+
+
+        - query: UPDATE eg_pl_petlicensedetail SET additionaldetail = ?,lastmodifiedby = ?,  lastmodifiedtime = ? WHERE id = ?;
+          basePath: Licenses.*.petLicenseDetail
+          jsonMaps:
+            - jsonPath: $.Licenses.*.petLicenseDetail.additionalDetail
+              type: JSON
+              dbType: JSONB
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedBy
+
+            - jsonPath: $.Licenses.*.auditDetails.lastModifiedTime
+
+            - jsonPath: $.Licenses.*.petLicenseDetail.id
