@@ -7,6 +7,8 @@ import java.util.List;
 public class PLConstants {
 	
 	public static final String businessService_PL = "PL";
+	
+	public static  final String businessService_BPA = "BPAREG";
 
     public static final String MODULE = "rainmaker-pl";
 
@@ -74,11 +76,11 @@ public class PLConstants {
 
     public static final String LICENSETYPE_JSONPATH_CODE = "$.MdmsRes.PetLicense.LicenseType.*.code";
 
-    public static final String ANIMAL_CATAGORY_JSONPATH_UOM = "$.MdmsRes.PetLicense.AnimalCategory.*.code";
+    public static final String ANIMAL_CATAGORY_JSONPATH_CODE = "$.MdmsRes.PetLicense.AnimalCategory.*.code";
 
     public static final String ANIMAL_SUB_CATAGORY_JSONPATH_CODE = "$.MdmsRes.PetLicense.AnimalSubCategory.*.code";
 
-    public static final String ANIMAL_COLOR_JSONPATH_UOM = "$.MdmsRes.PetLicense.AnimalColor.*.code";
+    public static final String ANIMAL_COLOR_JSONPATH_CODE = "$.MdmsRes.PetLicense.AnimalColor.*.code";
 
 
     //FINANCIAL YEAR

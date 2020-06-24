@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.pl.models.OwnerInfo;
 import org.egov.pl.models.PetLicense;
 import org.egov.pl.models.PetLicenseRequest;
 import org.egov.pl.web.models.workflow.BusinessService;
@@ -172,7 +173,8 @@ public class ActionValidator {
 						errorMap.put("INVALID UPDATE", "Id of petLicenseDetail cannot be null");
 					if (license.getPetLicenseDetail().getAddress() == null)
 						errorMap.put("INVALID UPDATE", "Id of address cannot be null");
-					license.getPetLicenseDetail().getOwners().forEach(owner -> {
+					OwnerInfo owner = license.getPetLicenseDetail().getOwner();
+						
 						if (owner.getUuid() == null)
 							errorMap.put("INVALID UPDATE", "Id of owner cannot be null");
 						if (!CollectionUtils.isEmpty(owner.getDocuments())) {
@@ -181,14 +183,7 @@ public class ActionValidator {
 									errorMap.put("INVALID UPDATE", "Id of owner document cannot be null");
 							});
 						}
-					});
-				
-					if (!CollectionUtils.isEmpty(license.getPetLicenseDetail().getAccessories())) {
-						license.getPetLicenseDetail().getAccessories().forEach(accessory -> {
-							if (accessory.getId() == null)
-								errorMap.put("INVALID UPDATE", "Id of accessory cannot be null");
-						});
-					}
+			
 					if (!CollectionUtils.isEmpty(license.getPetLicenseDetail().getApplicationDocuments())) {
 						license.getPetLicenseDetail().getApplicationDocuments().forEach(document -> {
 							if (document.getId() == null)

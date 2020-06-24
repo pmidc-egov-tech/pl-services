@@ -25,41 +25,35 @@ public class PLQueryBuilder {
 	private static final String INNER_JOIN_STRING = " INNER JOIN ";
 	private static final String LEFT_OUTER_JOIN_STRING = " LEFT OUTER JOIN ";
 
-	@Value("${egov.receipt.businessserviceTL}")
-	private String businessServiceTL;
+	@Value("${egov.receipt.businessservicePL}")
+	private String businessServicePL;
 
 	@Value("${egov.receipt.businessserviceBPA}")
 	private String businessServiceBPA;
 
-	private static final String QUERY = "SELECT pl.*,tld.*,tlunit.*,tlacc.*,tlowner.*,"
-			+ "tladdress.*,tlapldoc.*,tlverdoc.*,tlownerdoc.*,tlinsti.*,pl.id as tl_id,pl.tenantid as tl_tenantId,pl.lastModifiedTime as "
-			+ "tl_lastModifiedTime,pl.createdBy as tl_createdBy,pl.lastModifiedBy as tl_lastModifiedBy,pl.createdTime as "
-			+ "tl_createdTime,tld.id as tld_id,tladdress.id as tl_ad_id,tld.createdBy as tld_createdBy,"
-			+ "tlowner.id as tlowner_uuid,tlowner.active as useractive,"
-			+ "tld.createdTime as tld_createdTime,tld.lastModifiedBy as tld_lastModifiedBy,tld.createdTime as "
-			+ "tld_createdTime,tlunit.id as tl_un_id,tlunit.tradeType as tl_un_tradeType,tlunit.uom as tl_un_uom,tlunit.active as tl_un_active,"
-			+ "tlunit.uomvalue as tl_un_uomvalue,tlacc.id as tl_acc_id,tlacc.uom as tl_acc_uom,tlacc.uomvalue as tl_acc_uomvalue,tlacc.active as tl_acc_active,"
-			+ "tlapldoc.id as tl_ap_doc_id,tlapldoc.documenttype as tl_ap_doc_documenttype,tlapldoc.filestoreid as tl_ap_doc_filestoreid,tlapldoc.active as tl_ap_doc_active,"
-			+ "tlverdoc.id as tl_ver_doc_id,tlverdoc.documenttype as tl_ver_doc_documenttype,tlverdoc.filestoreid as tl_ver_doc_filestoreid,tlverdoc.active as tl_ver_doc_active,"
-			+ "tlownerdoc.userid as docuserid,tlownerdoc.tradeLicenseDetailId as doctradelicensedetailid,tlownerdoc.id as ownerdocid,"
-			+ "tlownerdoc.documenttype as ownerdocType,tlownerdoc.filestoreid as ownerfileStoreId,tlownerdoc.documentuid as ownerdocuid,tlownerdoc.active as ownerdocactive,"
-			+ " tlinsti.id as instiid,tlinsti.name as authorisedpersonname,tlinsti.type as institutiontype,tlinsti.tenantid as institenantId,tlinsti.active as instiactive, "
-			+ " tlinsti.instituionname as instiinstituionname, tlinsti.contactno as insticontactno, tlinsti.organisationregistrationno as instiorganisationregistrationno, tlinsti.address as instiaddress FROM eg_tl_tradelicense pl"
-			+ INNER_JOIN_STRING + "eg_tl_tradelicensedetail tld ON tld.tradelicenseid = pl.id" + INNER_JOIN_STRING
-			+ "eg_tl_address tladdress ON tladdress.tradelicensedetailid = tld.id" + INNER_JOIN_STRING
-			+ "eg_tl_owner tlowner ON tlowner.tradelicensedetailid = tld.id" + INNER_JOIN_STRING
-			+ "eg_tl_tradeunit tlunit ON tlunit.tradelicensedetailid = tld.id" + LEFT_OUTER_JOIN_STRING
-			+ "eg_tl_accessory tlacc ON tlacc.tradelicensedetailid = tld.id" + LEFT_OUTER_JOIN_STRING
-			+ "eg_tl_document_owner tlownerdoc ON tlownerdoc.userid = tlowner.id" + LEFT_OUTER_JOIN_STRING
-			+ "eg_tl_applicationdocument tlapldoc ON tlapldoc.tradelicensedetailid = tld.id" + LEFT_OUTER_JOIN_STRING
-			+ "eg_tl_verificationdocument tlverdoc ON tlverdoc.tradelicensedetailid = tld.id" + LEFT_OUTER_JOIN_STRING
-			+ "eg_tl_institution tlinsti ON tlinsti.tradelicensedetailid = tld.id ";
+	private static final String QUERY = "SELECT pl.*,pld.*,plowner.*,"
+			+ "pladdress.*,plapldoc.*,plverdoc.*,plownerdoc.*,plinsti.*,pl.id as pl_id,pl.tenantid as pl_tenantId,pl.lastModifiedTime as "
+			+ "pl_lastModifiedTime,pl.createdBy as pl_createdBy,pl.lastModifiedBy as pl_lastModifiedBy,pl.createdTime as "
+			+ "pl_createdTime,pld.id as pld_id,pladdress.id as pl_ad_id,pld.createdBy as pld_createdBy,"
+			+ "plowner.id as plowner_uuid,plowner.active as useractive,"
+			+ "pld.createdTime as pld_createdTime,pld.lastModifiedBy as pld_lastModifiedBy,pld.createdTime as "
+			+ "pld_createdTime,"
+			+ "plapldoc.id as pl_ap_doc_id,plapldoc.documenttype as pl_ap_doc_documenttype,plapldoc.filestoreid as pl_ap_doc_filestoreid,plapldoc.active as pl_ap_doc_active,"
+			+ "plverdoc.id as pl_ver_doc_id,plverdoc.documenttype as pl_ver_doc_documenttype,plverdoc.filestoreid as pl_ver_doc_filestoreid,plverdoc.active as pl_ver_doc_active,"
+			+ "plownerdoc.userid as docuserid,plownerdoc.petLicenseDetailId as docpetlicensedetailid,plownerdoc.id as ownerdocid,"
+			+ "plownerdoc.documenttype as ownerdocType,plownerdoc.filestoreid as ownerfileStoreId,plownerdoc.documentuid as ownerdocuid,plownerdoc.active as ownerdocactive,"
+			+ INNER_JOIN_STRING
+			+ "eg_pl_address pladdress ON pladdress.petlicensedetailid = pld.id" + INNER_JOIN_STRING
+			+ "eg_pl_owner plowner ON plowner.petlicensedetailid = pld.id" + INNER_JOIN_STRING
+			+ "eg_pl_document_owner plownerdoc ON plownerdoc.userid = plowner.id" + LEFT_OUTER_JOIN_STRING
+			+ "eg_pl_applicationdocument plapldoc ON plapldoc.petlicensedetailid = pld.id" + LEFT_OUTER_JOIN_STRING
+			+ "eg_pl_verificationdocument plverdoc ON plverdoc.petlicensedetailid = pld.id";
 
 	private final String paginationWrapper = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY pl_id) offset_ FROM " + "({})" + " result) result_offset "
 			+ "WHERE offset_ > ? AND offset_ <= ?";
 
-	public String getTLSearchQuery(PetLicenseSearchCriteria criteria, List<Object> preparedStmtList) {
+	public String getPLSearchQuery(PetLicenseSearchCriteria criteria, List<Object> preparedStmtList) {
 
 		StringBuilder builder = new StringBuilder(QUERY);
 
@@ -147,10 +141,10 @@ public class PLQueryBuilder {
 
 	private void addBusinessServiceClause(PetLicenseSearchCriteria criteria, List<Object> preparedStmtList,
 			StringBuilder builder) {
-		if ((criteria.getBusinessService() == null) || (businessServiceTL.equals(criteria.getBusinessService()))) {
+		if ((criteria.getBusinessService() == null) || (businessServicePL.equals(criteria.getBusinessService()))) {
 			addClauseIfRequired(preparedStmtList, builder);
 			builder.append(" (pl.businessservice=? or pl.businessservice isnull) ");
-			preparedStmtList.add(businessServiceTL);
+			preparedStmtList.add(businessServicePL);
 		} else if (businessServiceBPA.equals(criteria.getBusinessService())) {
 			addClauseIfRequired(preparedStmtList, builder);
 			builder.append(" pl.businessservice=? ");

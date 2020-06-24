@@ -68,10 +68,10 @@ public class PLConfiguration {
     private String idGenPath;
 
     @Value("${egov.idgen.pl.applicationNum.name}")
-    private String applicationNumberIdgenNameTL;
+    private String applicationNumberIdgenNamePL;
 
     @Value("${egov.idgen.pl.applicationNum.format}")
-    private String applicationNumberIdgenFormatTL;
+    private String applicationNumberIdgenFormatPL;
 
     @Value("${egov.idgen.pl.licensenumber.name}")
     private String licenseNumberIdgenNamePL;
@@ -127,7 +127,42 @@ public class PLConfiguration {
     @Value("${egov.pl.max.limit}")
     private Integer maxSearchLimit;
 
+    
+    
+    // tradelicense Calculator
+    @Value("${egov.pl.calculator.host}")
+    private String calculatorHost;
 
+    @Value("${egov.pl.calculator.calculate.endpoint}")
+    private String calculateEndpointPL;
+
+    @Value("${egov.bpa.calculator.calculate.endpoint}")
+    private String calculateEndpointBPA;
+
+    @Value("${egov.pl.calculator.getBill.endpoint}")
+    private String getBillEndpoint;
+
+    //Institutional key word
+    @Value("${egov.ownershipcategory.institutional}")
+    private String institutional;
+
+
+    @Value("${egov.receipt.businessservicePL}")
+    private String businessServicePL;
+
+
+    @Value("${egov.receipt.businessserviceBPA}")
+    private String businessServiceBPA;
+
+    //Property Service
+    @Value("${egov.property.service.host}")
+    private String propertyHost;
+
+    @Value("${egov.property.service.context.path}")
+    private String propertyContextPath;
+
+    @Value("${egov.property.endpoint}")
+    private String propertySearchEndpoint;
 
 
     //SMS

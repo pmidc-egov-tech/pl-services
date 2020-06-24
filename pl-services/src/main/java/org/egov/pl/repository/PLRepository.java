@@ -7,16 +7,14 @@ import org.egov.pl.producer.Producer;
 import org.egov.pl.repository.builder.PLQueryBuilder;
 import org.egov.pl.repository.rowmapper.PLRowMapper;
 import org.egov.pl.workflow.WorkflowService;
-import org.egov.tl.config.TLConfiguration;
-import org.egov.tl.web.models.*;
+import org.egov.pl.config.PLConfiguration;
+import org.egov.pl.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
-
-import static org.egov.tl.util.TLConstants.ACTION_ADHOC;
 
 
 @Slf4j
@@ -89,8 +87,8 @@ public class PLRepository {
             if (idToIsStateUpdatableMap.get(license.getId())) {
                 licensesForUpdate.add(license);
             }
-            else if(license.getAction().equalsIgnoreCase(ACTION_ADHOC))
-                licensesForAdhocChargeUpdate.add(license);
+//            else if(license.getAction().equalsIgnoreCase(ACTION_ADHOC))
+//                licensesForAdhocChargeUpdate.add(license);
             else {
                 licesnsesForStatusUpdate.add(license);
             }
@@ -117,16 +115,15 @@ public class PLRepository {
     private void sortChildObjectsById(List<PetLicense> petLicenses){
         if(CollectionUtils.isEmpty(petLicenses))
             return;
-        petLicenses.forEach(license -> {
-            license.getTradeLicenseDetail().getOwners().sort(Comparator.comparing(User::getUuid));
-            license.getTradeLicenseDetail().getTradeUnits().sort(Comparator.comparing(TradeUnit::getId));
-            if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getAccessories()))
-                license.getTradeLicenseDetail().getAccessories().sort(Comparator.comparing(Accessory::getId));
-            if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getApplicationDocuments()))
-                license.getTradeLicenseDetail().getApplicationDocuments().sort(Comparator.comparing(Document::getId));
-            if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getVerificationDocuments()))
-                license.getTradeLicenseDetail().getVerificationDocuments().sort(Comparator.comparing(Document::getId));
-        });
+//        petLicenses.forEach(license -> {
+//            license.getPetLicenseDetail().getOwner().sort(Comparator.comparing(User::getUuid));
+//            if(!CollectionUtils.isEmpty(license.getPetLicenseDetail().getAnimalColor()))
+//                license.getPetLicenseDetail().getAnimalColor().sort(Comparator.comparing(Accessory::getId));
+//            if(!CollectionUtils.isEmpty(license.getPetLicenseDetail().getApplicationDocuments()))
+//                license.getPetLicenseDetail().getApplicationDocuments().sort(Comparator.comparing(Document::getId));
+//            if(!CollectionUtils.isEmpty(license.getPetLicenseDetail().getVerificationDocuments()))
+//                license.getPetLicenseDetail().getVerificationDocuments().sort(Comparator.comparing(Document::getId));
+//        });
     }
 
 

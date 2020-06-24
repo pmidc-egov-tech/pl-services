@@ -5,14 +5,18 @@ import org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.pl.web.models.user.UserDetailResponse;
-import org.egov.tl.config.TLConfiguration;
-import org.egov.tl.repository.TLRepository;
-import org.egov.tl.service.TradeLicenseService;
-import org.egov.tl.service.UserService;
-import org.egov.tl.util.BPAConstants;
-import org.egov.tl.util.TLConstants;
-import org.egov.tl.util.TradeUtil;
-import org.egov.tl.web.models.*;
+import org.egov.pl.config.PLConfiguration;
+import org.egov.pl.models.OwnerInfo;
+import org.egov.pl.models.PetLicense;
+import org.egov.pl.models.PetLicenseRequest;
+import org.egov.pl.models.PetLicenseSearchCriteria;
+import org.egov.pl.repository.PLRepository;
+import org.egov.pl.service.PetLicenseService;
+import org.egov.pl.service.UserService;
+import org.egov.pl.util.BPAConstants;
+import org.egov.pl.util.PLConstants;
+import org.egov.pl.util.AnimalCategoryUtil;
+import org.egov.pl.web.models.*;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +26,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.egov.tl.util.TLConstants.businessService_BPA;
-import static org.egov.tl.util.TLConstants.businessService_TL;
+import static org.egov.pl.util.PLConstants.businessService_BPA;
+import static org.egov.pl.util.PLConstants.businessService_PL;
 
 @Component
 public class PLValidator {
@@ -35,7 +39,7 @@ public class PLValidator {
 
     private MDMSValidator mdmsValidator;
 
-    private PetUtil petUtil;
+    private AnimalCategoryUtil animalCategoryUtil;
 
     private UserService userService;
 
@@ -47,11 +51,11 @@ public class PLValidator {
 
     @Autowired
     public PLValidator(PLRepository plRepository, PLConfiguration config, 
-                       MDMSValidator mdmsValidator, PetUtil petUtil,UserService userService) {
+                       MDMSValidator mdmsValidator, AnimalCategoryUtil animalCategoryUtil,UserService userService) {
         this.plRepository = plRepository;
         this.config = config;
         this.mdmsValidator = mdmsValidator;
-        this.petUtil = petUtil;
+        this.animalCategoryUtil = animalCategoryUtil;
         this.userService=userService;
     }
 
@@ -66,7 +70,7 @@ public class PLValidator {
             businessService = businessService_PL;
   
         mdmsValidator.validateMdmsData(request, mdmsData);
-        validateInstitution(request);
+//        validateInstitution(request);
         validateDuplicateDocuments(request);
     }
 
@@ -86,7 +90,7 @@ public class PLValidator {
     private void validatePLSpecificNotNullFields(PetLicenseRequest request) {
         request.getLicenses().forEach(license -> {
             Map<String, String> errorMap = new HashMap<>();
-            if ((license.getTradeLicenseDetail().getAddress().getLocality() == null)||(license.getTradeLicenseDetail().getAddress().getLocality().getCode() == null))
+            if ((license.getPetLicenseDetail().getAddress().getLocality() == null)||(license.getPetLicenseDetail().getAddress().getLocality().getCode() == null))
                 errorMap.put("NULL_LOCALITY", " Locality cannot be null");
 
             if (!errorMap.isEmpty())
@@ -95,10 +99,7 @@ public class PLValidator {
     }
 
     private void validateBPASpecificValidations(PetLicenseRequest request) {
-
-        request.getLicenses().forEach(license -> {
-            license.getTradeLicenseDetail().getOwners().forEach(
-                    owner -> {
+        OwnerInfo owner = request.getLicenses().get(0).getPetLicenseDetail().getOwner();
                         if (owner.getGender() == null)
                             throw new CustomException("NULL_USERGENDER", " User gender cannot be null");
 
@@ -107,29 +108,24 @@ public class PLValidator {
 
                         if (owner.getPermanentAddress() == null)
                             throw new CustomException("NULL_PERMANENTADDRESS", " User Permanent Address cannot be null");
-//
-//                        if (owner.getCorrespondenceAddress() == null)
-//                            throw new CustomException("NULL_CORRESPONDANCEADDRESS", " User Correspondance address cannot be null");
-                    }
-            );
-        });
+
     }
     /**
      *  Validates the fromDate and toDate of the request
-     * @param request The input TradeLicenseRequest Object
+     * @param request The input PetLicenseRequest Object
      */
     private void valideDates(PetLicenseRequest request,Object mdmsData){
         request.getLicenses().forEach(license -> {
             if(license.getValidTo()==null)
                 throw new CustomException("INVALID VALIDTO DATE"," Validto cannot be null");
-            Map<String,Long> taxPeriods = tradeUtil.getTaxPeriods(license,mdmsData);
-            if(license.getValidTo()!=null && license.getValidTo()>taxPeriods.get(TLConstants.MDMS_ENDDATE)){
+            Map<String,Long> taxPeriods = animalCategoryUtil.getTaxPeriods(license,mdmsData);
+            if(license.getValidTo()!=null && license.getValidTo()>taxPeriods.get(PLConstants.MDMS_ENDDATE)){
                 Date expiry = new Date(license.getValidTo());
                 throw new CustomException("INVALID TO DATE"," Validto cannot be greater than: "+expiry);
             }
             if(license.getLicenseType().toString().equalsIgnoreCase(PetLicense.LicenseTypeEnum.TEMPORARY.toString())) {
                 Long startOfDay = getStartOfDay();
-                if (!config.getIsPreviousTLAllowed() && license.getValidFrom() != null
+                if (!config.getIsPreviousPLAllowed() && license.getValidFrom() != null
                         && license.getValidFrom() < startOfDay)
                     throw new CustomException("INVALID FROM DATE", "The validFrom date cannot be less than CurrentDate");
                 if ((license.getValidFrom() != null && license.getValidTo() != null) && (license.getValidTo() - license.getValidFrom()) < config.getMinPeriod())
@@ -164,7 +160,7 @@ public class PLValidator {
         validateAllIds(searchResult, licenses);
        
         mdmsValidator.validateMdmsData(request, mdmsData);
-        validateTradeUnits(request);
+//        validateAnimalCategory(request);
         validateDuplicateDocuments(request);
         setFieldsFromSearch(request, searchResult, mdmsData);
         validateOwnerActiveStatus(request);
@@ -175,27 +171,27 @@ public class PLValidator {
      * Validates that atleast one tradeUnit is active equal true or new tradeUnit
      * @param request The input PetLicenseRequest Object
      */
-    private void validateTradeUnits(PetLicenseRequest request){
-        Map<String,String> errorMap = new HashMap<>();
-        List<PetLicense> licenses = request.getLicenses();
-
-        for(PetLicense license : licenses)
-        {
-            Boolean flag = false;
-            List<PetUnit> units = license.getPetLicenseDetail().getTradeUnits();
-            for(PetUnit unit : units) {
-                if(unit.getId()!=null && unit.getActive())
-                    flag = true;
-                else if(unit.getId()==null)
-                    flag = true;
-            }
-            if(!flag)
-                errorMap.put("INVALID UPDATE","All TradeUnits are inactive in the tradeLicense: "+license.getApplicationNumber());
-        }
-
-        if(!errorMap.isEmpty())
-            throw new CustomException(errorMap);
-    }
+//    private void validateTradeUnits(PetLicenseRequest request){
+//        Map<String,String> errorMap = new HashMap<>();
+//        List<PetLicense> licenses = request.getLicenses();
+//
+//        for(PetLicense license : licenses)
+//        {
+//            Boolean flag = false;
+//            List<PetUnit> units = license.getPetLicenseDetail().getTradeUnits();
+//            for(PetUnit unit : units) {
+//                if(unit.getId()!=null && unit.getActive())
+//                    flag = true;
+//                else if(unit.getId()==null)
+//                    flag = true;
+//            }
+//            if(!flag)
+//                errorMap.put("INVALID UPDATE","All TradeUnits are inactive in the tradeLicense: "+license.getApplicationNumber());
+//        }
+//
+//        if(!errorMap.isEmpty())
+//            throw new CustomException(errorMap);
+//    }
 
 
 
@@ -203,64 +199,51 @@ public class PLValidator {
 
     /**
      * Returns the list of ids of all owners as list for the given tradelicense
-     * @param license TradeLicense whose ownerIds are to be extracted
+     * @param license PetLicense whose ownerIds are to be extracted
      * @return list od OwnerIds
      */
-    private List<String> getOwnerIds(PetLicense license){
-        List<String> ownerIds = new LinkedList<>();
-        if(!CollectionUtils.isEmpty(license.getPetLicenseDetail().getOwners())){
-            license.getPetLicenseDetail().getOwners().forEach(owner -> {
-                if(owner.getUserActive()!=null)
-                    ownerIds.add(owner.getUuid());
-            });
-        }
-        return ownerIds;
+    private String getOwnerIds(PetLicense license){
+    	OwnerInfo owner = license.getPetLicenseDetail().getOwner();
+        return owner.getUuid();
     }
 
     /**
      * Returns the list of ids of all tradeUnits as list for the given tradelicense
-     * @param license TradeLicense whose tradeUnitIds are to be extracted
+     * @param license PetLicense whose tradeUnitIds are to be extracted
      * @return list od tradeUnitIdss
      */
-    private List<String> getTradeUnitIds(PetLicense license){
-        List<String> tradeUnitIds = new LinkedList<>();
-        if(!CollectionUtils.isEmpty(license.getPetLicenseDetail().getTradeUnits())){
-            license.getPetLicenseDetail().getTradeUnits().forEach(tradeUnit -> {
-                tradeUnitIds.add(tradeUnit.getId());
-            });
-        }
-        return tradeUnitIds;
-    }
+//    private List<String> getTradeUnitIds(PetLicense license){
+//        List<String> tradeUnitIds = new LinkedList<>();
+//        if(!CollectionUtils.isEmpty(license.getPetLicenseDetail().getTradeUnits())){
+//            license.getPetLicenseDetail().getTradeUnits().forEach(tradeUnit -> {
+//                tradeUnitIds.add(tradeUnit.getId());
+//            });
+//        }
+//        return tradeUnitIds;
+//    }
 
     
     /**
      * Returns the list of ids of all ownerDocs as list for the given tradelicense
-     * @param license TradeLicense whose ownerDocIds are to be extracted
+     * @param license PetLicense whose ownerDocIds are to be extracted
      * @return list od ownerDocIds
      */
-    private List<String> getOwnerDocIds(PetLicense license){
-        List<String> ownerDocIds = new LinkedList<>();
-        if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getOwners())){
-            license.getTradeLicenseDetail().getOwners().forEach(owner -> {
-                if(!CollectionUtils.isEmpty(owner.getDocuments())){
-                    owner.getDocuments().forEach(document -> {
-                        ownerDocIds.add(document.getId());
-                    });
-                }
-            });
-        }
+    private String getOwnerDocIds(PetLicense license){
+    	String ownerDocIds;
+    	OwnerInfo owner = license.getPetLicenseDetail().getOwner();
+    	ownerDocIds = owner.getUuid();      
         return ownerDocIds;
     }
 
     /**
      * Returns the list of ids of all applicationDoc as list for the given tradelicense
-     * @param license TradeLicense whose applicationDocIds are to be extracted
+     * @param license PetLicense whose applicationDocIds are to be extracted
      * @return list od applicationDocIds
      */
     private List<String> getApplicationDocIds(PetLicense license){
         List<String> applicationDocIds = new LinkedList<>();
-        if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getApplicationDocuments())){
-            license.getTradeLicenseDetail().getApplicationDocuments().forEach(document -> {
+        if(!CollectionUtils.isEmpty(license.getPetLicenseDetail().getApplicationDocuments())){
+            license.getPetLicenseDetail().getApplicationDocuments().forEach(document -> {
                 applicationDocIds.add(document.getId());
             });
         }
@@ -269,13 +252,13 @@ public class PLValidator {
 
     /**
      * Returns the list of ids of all verficationDoc as list for the given tradelicense
-     * @param license TradeLicense whose VerficationDocIds are to be extracted
+     * @param license PetLicense whose VerficationDocIds are to be extracted
      * @return list od VerficationDocIds
      */
     private List<String> getVerficationDocIds(PetLicense license){
         List<String> verficationDocIds = new LinkedList<>();
-        if(!CollectionUtils.isEmpty(license.getTradeLicenseDetail().getVerificationDocuments())) {
-            license.getTradeLicenseDetail().getVerificationDocuments().forEach(document -> {
+        if(!CollectionUtils.isEmpty(license.getPetLicenseDetail().getVerificationDocuments())) {
+            license.getPetLicenseDetail().getVerificationDocuments().forEach(document -> {
                 verficationDocIds.add(document.getId());
             });
         }
@@ -285,28 +268,28 @@ public class PLValidator {
 
     /**
      * Enriches the immutable fields from database
-     * @param request The input TradeLicenseRequest
+     * @param request The input PetLicenseRequest
      * @param searchResult The list of searched licenses
      */
     private void setFieldsFromSearch(PetLicenseRequest request, List<PetLicense> searchResult, Object mdmsData) {
-        Map<String,PetLicense> idToTradeLicenseFromSearch = new HashMap<>();
-        searchResult.forEach(tradeLicense -> {
-            idToTradeLicenseFromSearch.put(petLicense.getId(),tradeLicense);
+        Map<String,PetLicense> idToPetLicenseFromSearch = new HashMap<>();
+        searchResult.forEach(petLicense -> {
+            idToPetLicenseFromSearch.put(petLicense.getId(),petLicense);
         });
         request.getLicenses().forEach(license -> {
-            license.getAuditDetails().setCreatedBy(idToTradeLicenseFromSearch.get(license.getId()).getAuditDetails().getCreatedBy());
-            license.getAuditDetails().setCreatedTime(idToTradeLicenseFromSearch.get(license.getId()).getAuditDetails().getCreatedTime());
-            license.setStatus(idToTradeLicenseFromSearch.get(license.getId()).getStatus());
-            license.setLicenseNumber(idToTradeLicenseFromSearch.get(license.getId()).getLicenseNumber());
+            license.getAuditDetails().setCreatedBy(idToPetLicenseFromSearch.get(license.getId()).getAuditDetails().getCreatedBy());
+            license.getAuditDetails().setCreatedTime(idToPetLicenseFromSearch.get(license.getId()).getAuditDetails().getCreatedTime());
+            license.setStatus(idToPetLicenseFromSearch.get(license.getId()).getStatus());
+            license.setLicenseNumber(idToPetLicenseFromSearch.get(license.getId()).getLicenseNumber());
             String businessService = license.getBusinessService();
             if (businessService == null)
-                businessService = businessService_TL;
+                businessService = businessService_PL;
             switch (businessService) {
-                case businessService_TL:
-                    if (!idToTradeLicenseFromSearch.get(license.getId()).getFinancialYear().equalsIgnoreCase(license.getFinancialYear())
-                            && license.getLicenseType().equals(TradeLicense.LicenseTypeEnum.PERMANENT)) {
-                        Map<String, Long> taxPeriods = tradeUtil.getTaxPeriods(license, mdmsData);
-                        license.setValidTo(taxPeriods.get(TLConstants.MDMS_ENDDATE));
+                case businessService_PL:
+                    if (!idToPetLicenseFromSearch.get(license.getId()).getFinancialYear().equalsIgnoreCase(license.getFinancialYear())
+                            && license.getLicenseType().equals(PetLicense.LicenseTypeEnum.PERMANENT)) {
+                        Map<String, Long> taxPeriods = animalCategoryUtil.getTaxPeriods(license, mdmsData);
+                        license.setValidTo(taxPeriods.get(PLConstants.MDMS_ENDDATE));
                     }
                     break;
             }
@@ -318,33 +301,33 @@ public class PLValidator {
      * @param searchResult The license from search
      * @param licenses The licenses from the update Request
      */
-    private void validateAllIds(List<TradeLicense> searchResult,List<TradeLicense> licenses){
+    private void validateAllIds(List<PetLicense> searchResult,List<PetLicense> licenses){
 
-        Map<String,TradeLicense> idToTradeLicenseFromSearch = new HashMap<>();
+        Map<String,PetLicense> idToPetLicenseFromSearch = new HashMap<>();
         searchResult.forEach(tradeLicense -> {
-            idToTradeLicenseFromSearch.put(tradeLicense.getId(),tradeLicense);
+            idToPetLicenseFromSearch.put(tradeLicense.getId(),tradeLicense);
         });
 
         Map<String,String> errorMap = new HashMap<>();
         licenses.forEach(license -> {
-            TradeLicense searchedLicense = idToTradeLicenseFromSearch.get(license.getId());
+            PetLicense searchedLicense = idToPetLicenseFromSearch.get(license.getId());
 
             if(!searchedLicense.getApplicationNumber().equalsIgnoreCase(license.getApplicationNumber()))
                 errorMap.put("INVALID UPDATE","The application number from search: "+searchedLicense.getApplicationNumber()
                         +" and from update: "+license.getApplicationNumber()+" does not match");
 
-            if(!searchedLicense.getTradeLicenseDetail().getId().
-                    equalsIgnoreCase(license.getTradeLicenseDetail().getId()))
-                errorMap.put("INVALID UPDATE","The id "+license.getTradeLicenseDetail().getId()+" does not exist");
+            if(!searchedLicense.getPetLicenseDetail().getId().
+                    equalsIgnoreCase(license.getPetLicenseDetail().getId()))
+                errorMap.put("INVALID UPDATE","The id "+license.getPetLicenseDetail().getId()+" does not exist");
 
-            if(!searchedLicense.getTradeLicenseDetail().getAddress().getId().
-                    equalsIgnoreCase(license.getTradeLicenseDetail().getAddress().getId()))
-                errorMap.put("INVALID UPDATE","The id "+license.getTradeLicenseDetail().getAddress().getId()+" does not exist");
+            if(!searchedLicense.getPetLicenseDetail().getAddress().getId().
+                    equalsIgnoreCase(license.getPetLicenseDetail().getAddress().getId()))
+                errorMap.put("INVALID UPDATE","The id "+license.getPetLicenseDetail().getAddress().getId()+" does not exist");
 
-            compareIdList(getTradeUnitIds(searchedLicense),getTradeUnitIds(license),errorMap);
-            compareIdList(getAccessoryIds(searchedLicense),getAccessoryIds(license),errorMap);
-            compareIdList(getOwnerIds(searchedLicense),getOwnerIds(license),errorMap);
-            compareIdList(getOwnerDocIds(searchedLicense),getOwnerDocIds(license),errorMap);
+//            compareIdList(getTradeUnitIds(searchedLicense),getTradeUnitIds(license),errorMap);
+//            compareIdList(getAccessoryIds(searchedLicense),getAccessoryIds(license),errorMap);
+//            compareIdList(getOwnerIds(searchedLicense),getOwnerIds(license),errorMap);
+//            compareIdList(getOwnerDocIds(searchedLicense),getOwnerDocIds(license),errorMap);
             compareIdList(getApplicationDocIds(searchedLicense),getApplicationDocIds(license),errorMap);
             compareIdList(getVerficationDocIds(searchedLicense),getVerficationDocIds(license),errorMap);
         });
@@ -372,9 +355,9 @@ public class PLValidator {
     /**
      * Validates if the search parameters are valid
      * @param requestInfo The requestInfo of the incoming request
-     * @param criteria The TradeLicenseSearch Criteria
+     * @param criteria The PetLicenseSearch Criteria
      */
-    public void validateSearch(RequestInfo requestInfo, TradeLicenseSearchCriteria criteria, String serviceFromPath) {
+    public void validateSearch(RequestInfo requestInfo, PetLicenseSearchCriteria criteria, String serviceFromPath) {
         String serviceInSearchCriteria = criteria.getBusinessService();
         if ((serviceInSearchCriteria != null) && (!StringUtils.equals(serviceFromPath, serviceInSearchCriteria))) {
             throw new CustomException("INVALID SEARCH", "Business service in Path param and requestbody not matching");
@@ -422,10 +405,10 @@ public class PLValidator {
 
     /**
      * Validates if the paramters coming in search are allowed
-     * @param criteria TradeLicense search criteria
+     * @param criteria PetLicense search criteria
      * @param allowedParams Allowed Params for search
      */
-    private void validateSearchParams(TradeLicenseSearchCriteria criteria,List<String> allowedParams){
+    private void validateSearchParams(PetLicenseSearchCriteria criteria,List<String> allowedParams){
 
         if(criteria.getApplicationNumber()!=null && !allowedParams.contains("applicationNumber"))
             throw new CustomException("INVALID SEARCH","Search on applicationNumber is not allowed");
@@ -467,11 +450,11 @@ public class PLValidator {
      * Validates application documents for duplicates
      * @param request The tradeLcienseRequest
      */
-    private void validateDuplicateDocuments(TradeLicenseRequest request){
+    private void validateDuplicateDocuments(PetLicenseRequest request){
         List<String> documentFileStoreIds = new LinkedList();
         request.getLicenses().forEach(license -> {
-            if(license.getTradeLicenseDetail().getApplicationDocuments()!=null){
-                license.getTradeLicenseDetail().getApplicationDocuments().forEach(
+            if(license.getPetLicenseDetail().getApplicationDocuments()!=null){
+                license.getPetLicenseDetail().getApplicationDocuments().forEach(
                         document -> {
                             if(documentFileStoreIds.contains(document.getFileStoreId()))
                                 throw new CustomException("DUPLICATE_DOCUMENT ERROR","Same document cannot be used multiple times");
@@ -484,22 +467,19 @@ public class PLValidator {
 
 
     /**
-     * Checks if atleast one owner is active in TL
+     * Checks if atleast one owner is active in PL
      * @param request The update request
      */
-    private void validateOwnerActiveStatus(TradeLicenseRequest request){
+    private void validateOwnerActiveStatus(PetLicenseRequest request){
         Map<String,String> errorMap = new HashMap<>();
-        request.getLicenses().forEach(license -> {
+        OwnerInfo ownerInfo = request.getLicenses().get(0).getPetLicenseDetail().getOwner();
             Boolean flag = false;
-            for(OwnerInfo ownerInfo : license.getTradeLicenseDetail().getOwners()){
                 if(ownerInfo.getUserActive()){
                     flag=true;
-                    break;
                 }
-            }
             if(!flag)
-                errorMap.put("INVALID OWNER","All owners are inactive for application:  "+license.getApplicationNumber());
-        });
+                errorMap.put("INVALID OWNER","All owners are inactive for application:  "+request.getLicenses().get(0).getApplicationNumber());
+       
         if(!errorMap.isEmpty())
             throw new CustomException(errorMap);
     }

@@ -8,18 +8,18 @@ import org.egov.pl.validator.PLValidator;
 import org.egov.pl.web.models.user.CreateUserRequest;
 import org.egov.pl.web.models.user.UserDetailResponse;
 import org.egov.pl.web.models.user.UserSearchRequest;
-import org.egov.tl.config.TLConfiguration;
-import org.egov.tl.repository.ServiceRequestRepository;
-import org.egov.tl.repository.TLRepository;
-import org.egov.tl.util.TradeUtil;
-import org.egov.tl.web.models.*;
+import org.egov.pl.config.PLConfiguration;
+import org.egov.pl.repository.ServiceRequestRepository;
+import org.egov.pl.repository.PLRepository;
+import org.egov.pl.util.AnimalCategoryUtil;
+import org.egov.pl.models.*;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import static org.egov.tl.util.TLConstants.*;
+import static org.egov.pl.util.PLConstants.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -34,19 +34,19 @@ public class UserService{
 
     private ServiceRequestRepository serviceRequestRepository;
 
-    private TLConfiguration config;
+    private PLConfiguration config;
 
 
-    private TradeUtil tradeUtil;
+    private AnimalCategoryUtil animalCategoryUtil;
 
-    private TLRepository repository;
+    private PLRepository repository;
 
     @Autowired
-    public UserService(ObjectMapper mapper, ServiceRequestRepository serviceRequestRepository, TLConfiguration config,TradeUtil tradeUtil,TLRepository repository) {
+    public UserService(ObjectMapper mapper, ServiceRequestRepository serviceRequestRepository, PLConfiguration config,AnimalCategoryUtil animalCategoryUtil,PLRepository repository) {
         this.mapper = mapper;
         this.serviceRequestRepository = serviceRequestRepository;
         this.config = config;
-        this.tradeUtil=tradeUtil;
+        this.animalCategoryUtil=animalCategoryUtil;
         this.repository=repository;
     }
 
@@ -57,72 +57,72 @@ public class UserService{
      * @param request TradeLciense create or update request
      */
 
-    public void createUser(TradeLicenseRequest request,boolean isBPARoleAddRequired){
-        List<TradeLicense> licenses = request.getLicenses();
-        RequestInfo requestInfo = request.getRequestInfo();
-        Role role = getCitizenRole(licenses.get(0).getTenantId());
-        licenses.forEach(tradeLicense -> {
-
-           /* Set<String> listOfMobileNumbers = getMobileNumbers(tradeLicense.getTradeLicenseDetail().getOwners()
-                    ,requestInfo,tradeLicense.getTenantId());*/
-
-            tradeLicense.getTradeLicenseDetail().getOwners().forEach(owner ->
-            {
-                OwnerInfo ownerInfoBackup=owner;
-                String businessService = tradeLicense.getBusinessService();
-                if (businessService == null)
-                    businessService = businessService_TL;
-                switch (businessService) {
-                    case businessService_BPA:
-                        UserDetailResponse userDetailResponse = searchByUserName(owner.getMobileNumber(), getStateLevelTenant(tradeLicense.getTenantId()));
-                        if (!userDetailResponse.getUser().isEmpty()) {
-                            User user = userDetailResponse.getUser().get(0);
-                            owner = addNotNullFieldsFromOwner(user, owner);
-                        }
-                        break;
-                }
-                if (owner.getUuid() == null) {
-                    addUserDefaultFields(tradeLicense.getTenantId(), role, owner, businessService);
-                    //  UserDetailResponse userDetailResponse = userExists(owner,requestInfo);
-                    StringBuilder uri = new StringBuilder(config.getUserHost())
-                            .append(config.getUserContextPath())
-                            .append(config.getUserCreateEndpoint());
-                    setUserName(owner,businessService);
-
-                    UserDetailResponse userDetailResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
-                    if (userDetailResponse.getUser().get(0).getUuid() == null) {
-                        throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
-                    }
-                    log.info("owner created --> " + userDetailResponse.getUser().get(0).getUuid());
-                    setOwnerFields(owner, userDetailResponse, requestInfo);
-                }
-                 else {
-                    UserDetailResponse userDetailResponse = userExists(owner,requestInfo);
-                    if(userDetailResponse.getUser().isEmpty())
-                        throw new CustomException("INVALID USER","The uuid "+owner.getUuid()+" does not exists");
-                    StringBuilder uri =new StringBuilder(config.getUserHost());
-                    uri=uri.append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
-                    OwnerInfo user = new OwnerInfo();
-                    user.addUserWithoutAuditDetail(owner);
-                    addNonUpdatableFields(user,userDetailResponse.getUser().get(0));
-                   if (isBPARoleAddRequired) {
-                        List<String> licenseeTyperRole = tradeUtil.getusernewRoleFromMDMS(tradeLicense, requestInfo);
-                        for (String rolename : licenseeTyperRole) {
-                            user.addRolesItem(Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
-                        }
-                   }
-                    userDetailResponse = userCall( new CreateUserRequest(requestInfo,user),uri);
-                    switch (businessService)
-                    {
-                        case businessService_BPA:
-                            owner=ownerInfoBackup;
-                            break;
-                    }
-                    setOwnerFields(owner,userDetailResponse,requestInfo);
-                }
-            });
-        });
-    }
+//    public void createUser(PetLicenseRequest request,boolean isBPARoleAddRequired){
+//        List<PetLicense> licenses = request.getLicenses();
+//        RequestInfo requestInfo = request.getRequestInfo();
+//        Role role = getCitizenRole(licenses.get(0).getTenantId());
+//        licenses.forEach(tradeLicense -> {
+//
+//           /* Set<String> listOfMobileNumbers = getMobileNumbers(tradeLicense.getTradeLicenseDetail().getOwners()
+//                    ,requestInfo,tradeLicense.getTenantId());*/
+//
+////            tradeLicense.getPetLicenseDetail().getOwner().forEach(owner ->
+////            {
+//                OwnerInfo ownerInfoBackup=owner;
+//                String businessService = petLicense.getBusinessService();
+//                if (businessService == null)
+//                    businessService = businessService_PL;
+//                switch (businessService) {
+//                    case businessService_BPA:
+//                        UserDetailResponse userDetailResponse = searchByUserName(owner.getMobileNumber(), getStateLevelTenant(petLicense.getTenantId()));
+//                        if (!userDetailResponse.getUser().isEmpty()) {
+//                            User user = userDetailResponse.getUser().get(0);
+//                            owner = addNotNullFieldsFromOwner(user, owner);
+//                        }
+//                        break;
+//                }
+//                if (owner.getUuid() == null) {
+//                    addUserDefaultFields(tradeLicense.getTenantId(), role, owner, businessService);
+//                    //  UserDetailResponse userDetailResponse = userExists(owner,requestInfo);
+//                    StringBuilder uri = new StringBuilder(config.getUserHost())
+//                            .append(config.getUserContextPath())
+//                            .append(config.getUserCreateEndpoint());
+//                    setUserName(owner,businessService);
+//
+//                    UserDetailResponse userDetailResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
+//                    if (userDetailResponse.getUser().get(0).getUuid() == null) {
+//                        throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
+//                    }
+//                    log.info("owner created --> " + userDetailResponse.getUser().get(0).getUuid());
+//                    setOwnerFields(owner, userDetailResponse, requestInfo);
+//                }
+//                 else {
+//                    UserDetailResponse userDetailResponse = userExists(owner,requestInfo);
+//                    if(userDetailResponse.getUser().isEmpty())
+//                        throw new CustomException("INVALID USER","The uuid "+owner.getUuid()+" does not exists");
+//                    StringBuilder uri =new StringBuilder(config.getUserHost());
+//                    uri=uri.append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
+//                    OwnerInfo user = new OwnerInfo();
+//                    user.addUserWithoutAuditDetail(owner);
+//                    addNonUpdatableFields(user,userDetailResponse.getUser().get(0));
+//                   if (isBPARoleAddRequired) {
+//                        List<String> licenseeTyperRole = tradeUtil.getusernewRoleFromMDMS(tradeLicense, requestInfo);
+//                        for (String rolename : licenseeTyperRole) {
+//                            user.addRolesItem(Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
+//                        }
+//                   }
+//                    userDetailResponse = userCall( new CreateUserRequest(requestInfo,user),uri);
+//                    switch (businessService)
+//                    {
+//                        case businessService_BPA:
+//                            owner=ownerInfoBackup;
+//                            break;
+//                    }
+//                    setOwnerFields(owner,userDetailResponse,requestInfo);
+//                }
+////            });
+//        });
+//    }
 
     private OwnerInfo addNotNullFieldsFromOwner(User user,OwnerInfo owner)
     {
@@ -265,7 +265,7 @@ public class UserService{
     private void addUserDefaultFields(String tenantId, Role role, OwnerInfo owner, String businessService){
         owner.setActive(true);
         owner.setTenantId(tenantId.split("\\.")[0]);
-        owner.setRoles(Collections.singletonList(role));
+//        owner.addRoles(Collections.singletonList(role));
         owner.setType("CITIZEN");
         switch (businessService)
         {
@@ -365,7 +365,7 @@ public class UserService{
      * @param requestInfo The requestInfo of the request
      * @return Search response from user service based on ownerIds
      */
-    public UserDetailResponse getUser(TradeLicenseSearchCriteria criteria,RequestInfo requestInfo){
+    public UserDetailResponse getUser(PetLicenseSearchCriteria criteria,RequestInfo requestInfo){
         UserSearchRequest userSearchRequest = getUserSearchRequest(criteria,requestInfo);
         StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
         UserDetailResponse userDetailResponse = userCall(userSearchRequest,uri);
@@ -379,7 +379,7 @@ public class UserService{
      * @param requestInfo The requestInfo of the request
      * @return The UserSearchRequest based on ownerIds
      */
-    private UserSearchRequest getUserSearchRequest(TradeLicenseSearchCriteria criteria, RequestInfo requestInfo){
+    private UserSearchRequest getUserSearchRequest(PetLicenseSearchCriteria criteria, RequestInfo requestInfo){
         UserSearchRequest userSearchRequest = new UserSearchRequest();
         userSearchRequest.setRequestInfo(requestInfo);
         userSearchRequest.setTenantId(criteria.getTenantId());
@@ -408,28 +408,28 @@ public class UserService{
      * Updates user if present else creates new user
      * @param request TradeLicenseRequest received from update
      */
-    public void updateUser(TradeLicenseRequest request){
-        List<TradeLicense> licenses = request.getLicenses();
+    public void updateUser(PetLicenseRequest request){
+        List<PetLicense> licenses = request.getLicenses();
 
         RequestInfo requestInfo = request.getRequestInfo();
         licenses.forEach(license -> {
-                license.getTradeLicenseDetail().getOwners().forEach(owner -> {
-                    UserDetailResponse userDetailResponse = isUserUpdatable(owner,requestInfo);
+//                license.getPetLicenseDetail().getOwner().forEach(owner -> {
+                    UserDetailResponse userDetailResponse = isUserUpdatable( license.getPetLicenseDetail().getOwner(),requestInfo);
                     OwnerInfo user = new OwnerInfo();
                     StringBuilder uri  = new StringBuilder(config.getUserHost());
                     if(CollectionUtils.isEmpty(userDetailResponse.getUser())) {
                         uri = uri.append(config.getUserContextPath()).append(config.getUserCreateEndpoint());
-                        user.addUserWithoutAuditDetail(owner);
-                        user.setUserName(owner.getMobileNumber());
+                        user.addUserWithoutAuditDetail( license.getPetLicenseDetail().getOwner());
+                        user.setUserName( license.getPetLicenseDetail().getOwner().getMobileNumber());
                     }
                     else
-                    {   owner.setUuid(userDetailResponse.getUser().get(0).getUuid());
+                    {    license.getPetLicenseDetail().getOwner().setUuid(userDetailResponse.getUser().get(0).getUuid());
                         uri=uri.append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
-                        user.addUserWithoutAuditDetail(owner);
+                        user.addUserWithoutAuditDetail( license.getPetLicenseDetail().getOwner());
                     }
                     userDetailResponse = userCall( new CreateUserRequest(requestInfo,user),uri);
-                    setOwnerFields(owner,userDetailResponse,requestInfo);
-                });
+                    setOwnerFields( license.getPetLicenseDetail().getOwner(),userDetailResponse,requestInfo);
+//                });
             });
     }
 

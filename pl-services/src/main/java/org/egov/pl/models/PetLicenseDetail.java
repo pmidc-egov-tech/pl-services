@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -35,8 +36,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class PetLicenseDetail {
-	@JsonProperty("owner")
-	private Object owner = null;
+    @JsonProperty("id")
+    @Size(max=64)
+    private String id;
+    
 
 	/**
 	 * License can be created from different channels
@@ -94,17 +97,16 @@ public class PetLicenseDetail {
 	@Valid
 	private List<Document> verificationDocuments = null;
 
-	@JsonProperty("additionalDetail")
-	private String additionalDetail = null;
+	  @JsonProperty("additionalDetail")
+      private JsonNode additionalDetail = null;
 
 	@JsonProperty("auditDetails")
 	private AuditDetails auditDetails = null;
+	
+	@JsonProperty("owner")
+	private OwnerInfo owner = null;
 
-	public PetLicenseDetail owner(Object owner) {
-		this.owner = owner;
-		return this;
-	}
-
+	
 	/**
 	 * Pet owner, he will be citizen user in system.
 	 * 
@@ -113,14 +115,7 @@ public class PetLicenseDetail {
 	@ApiModelProperty(required = true, value = "Pet owner, he will be citizen user in system.")
 	@NotNull
 
-	public Object getOwner() {
-		return owner;
-	}
-
-	public void setOwner(Object owner) {
-		this.owner = owner;
-	}
-
+	
 	public PetLicenseDetail channel(ChannelEnum channel) {
 		this.channel = channel;
 		return this;
@@ -299,25 +294,7 @@ public class PetLicenseDetail {
 		this.verificationDocuments = verificationDocuments;
 	}
 
-	public PetLicenseDetail additionalDetail(String additionalDetail) {
-		this.additionalDetail = additionalDetail;
-		return this;
-	}
 
-	/**
-	 * Json object to store additional details about license
-	 * 
-	 * @return additionalDetail
-	 **/
-	@ApiModelProperty(value = "Json object to store additional details about license")
-
-	public String getAdditionalDetail() {
-		return additionalDetail;
-	}
-
-	public void setAdditionalDetail(String additionalDetail) {
-		this.additionalDetail = additionalDetail;
-	}
 
 	public PetLicenseDetail auditDetails(AuditDetails auditDetails) {
 		this.auditDetails = auditDetails;

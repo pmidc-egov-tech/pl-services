@@ -7,7 +7,7 @@ serviceMaps:
       isTransaction: true
       queryMaps:
 
-        - query: INSERT INTO eg_pl_petlicense( id, accountid, tenantid, validfrom,validto,licensetype,applicationNumber, oldlicensenumber, applicationdate, action, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        - query: INSERT INTO eg_pl_petlicense( id, accountid, tenantid, validfrom,validto,licensetype,applicationNumber, oldlicensenumber, applicationdate, financialYear, action, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
           basePath: Licenses.*
           jsonMaps:
             - jsonPath: $.Licenses.*.id
@@ -27,7 +27,9 @@ serviceMaps:
             - jsonPath: $.Licenses.*.oldLicenseNumber
 
             - jsonPath: $.Licenses.*.applicationDate
-
+            
+            - jsonPath: $.Licenses.*.financialYear
+          
             - jsonPath: $.Licenses.*.action
 
             - jsonPath: $.Licenses.*.status
@@ -96,31 +98,31 @@ serviceMaps:
 
 
         - query: INSERT INTO eg_pl_document_owner(id,tenantId,userid,active, petLicenseDetailId, documenttype, fileStoreId,documentuid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ? ,? ,?, ?, ?, ?, ?, ?, ?, ?);
-          basePath: Licenses.*.petLicenseDetail.owners.*.documents.*
+          basePath: Licenses.*.petLicenseDetail.owner.*.documents.*
           jsonMaps:
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.id
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.id
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].tenantId
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].tenantId
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners[*][?({id} in @.documents[*].id)].uuid
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner[*][?({id} in @.documents[*].id)].uuid
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.active
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.active
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].petLicenseDetail.id
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].petLicenseDetail.id
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentType
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.documentType
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.fileStoreId
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.fileStoreId
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentUid
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.documentUid
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.createdBy
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.createdBy
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedBy
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.lastModifiedBy
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.createdTime
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.createdTime
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedTime
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.lastModifiedTime
 
 
 
@@ -209,7 +211,7 @@ serviceMaps:
             - jsonPath: $.Licenses.*.id
 
 
-        - query: UPDATE eg_pl_petlicense SET licenseNumber = ?,licensetype = ?, oldlicensenumber = ?, applicationdate = ?, issueddate = ?, validfrom = ?, validto = ?, action = ?, status = ?,  lastmodifiedby = ?,  lastmodifiedtime = ? WHERE id=?;
+        - query: UPDATE eg_pl_petlicense SET licenseNumber = ?,licensetype = ?, oldlicensenumber = ?, applicationdate = ?, issueddate = ?, validfrom = ?, validto = ?, financialYear = ?, action = ?, status = ?,  lastmodifiedby = ?,  lastmodifiedtime = ? WHERE id=?;
           basePath: Licenses.*
           jsonMaps:
             - jsonPath: $.Licenses.*.licenseNumber
@@ -227,6 +229,8 @@ serviceMaps:
             - jsonPath: $.Licenses.*.validTo
 
             - jsonPath: $.Licenses.*.action
+            
+            - jsonPath: $.Licenses.*.financialYear
 
             - jsonPath: $.Licenses.*.status
 
@@ -268,73 +272,73 @@ serviceMaps:
 
 
         - query: INSERT INTO eg_pl_owner( id, tenantid, active, petlicensedetailid, ownertype, createdby,lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT ON CONSTRAINT pk_eg_pl_owner DO UPDATE SET active = ?, isprimaryowner = ?, ownertype = ?, lastmodifiedby = ?,  lastmodifiedtime = ?;
-          basePath: Licenses.*.petLicenseDetail.owners.*
+          basePath: Licenses.*.petLicenseDetail.owner.*
           jsonMaps:
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.uuid
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.uuid
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.tenantId
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.tenantId
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.userActive
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.userActive
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].petLicenseDetail.id
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner[*].id)].petLicenseDetail.id
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.ownerType
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.ownerType
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.createdBy
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner[*].id)].auditDetails.createdBy
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedBy
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner[*].id)].auditDetails.lastModifiedBy
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.createdTime
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner[*].id)].auditDetails.createdTime
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedTime
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner[*].id)].auditDetails.lastModifiedTime
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.userActive
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.userActive
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.ownerType
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.ownerType
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedBy
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner[*].id)].auditDetails.lastModifiedBy
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners[*].id)].auditDetails.lastModifiedTime
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner[*].id)].auditDetails.lastModifiedTime
 
 
         - query: INSERT INTO eg_pl_document_owner(id,tenantId,active,userid, petLicenseDetailId, documenttype, fileStoreId,documentuid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT ON CONSTRAINT pk_eg_pl_document_owner DO UPDATE SET active = ?, documenttype = ?, fileStoreId = ?,documentuid = ?, lastmodifiedby = ?,  lastmodifiedtime = ?;
-          basePath: Licenses.*.petLicenseDetail.owners.*.documents.*
+          basePath: Licenses.*.petLicenseDetail.owner.*.documents.*
           jsonMaps:
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.id
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.id
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].tenantId
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].tenantId
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.active
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.active
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners[*][?({id} in @.documents[*].id)].uuid
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner[*][?({id} in @.documents[*].id)].uuid
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].petLicenseDetail.id
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].petLicenseDetail.id
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentType
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.documentType
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.fileStoreId
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.fileStoreId
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentUid
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.documentUid
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.createdBy
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.createdBy
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedBy
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.lastModifiedBy
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.createdTime
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.createdTime
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedTime
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.lastModifiedTime
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.active
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.active
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentType
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.documentType
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.fileStoreId
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.fileStoreId
 
-            - jsonPath: $.Licenses.*.petLicenseDetail.owners.*.documents.*.documentUid
+            - jsonPath: $.Licenses.*.petLicenseDetail.owner.*.documents.*.documentUid
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedBy
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.lastModifiedBy
 
-            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owners.*.documents[*].id)].auditDetails.lastModifiedTime
+            - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.owner.*.documents[*].id)].auditDetails.lastModifiedTime
 
 
 
@@ -471,7 +475,7 @@ serviceMaps:
             - jsonPath: $.Licenses[*][?({id} in @.petLicenseDetail.verificationDocuments[*].id)].auditDetails.lastModifiedTime
 
 
-        - query: UPDATE eg_pl_petlicense SET validfrom = ?,licenseNumber =?, issueddate = ?, action = ?, status = ?,  lastmodifiedby = ?,  lastmodifiedtime = ? WHERE id=?;
+        - query: UPDATE eg_pl_petlicense SET validfrom = ?,licenseNumber =?, issueddate = ?, action = ?, financialYear = ?, status = ?,  lastmodifiedby = ?,  lastmodifiedtime = ? WHERE id=?;
           basePath: Licenses.*
           jsonMaps:
             - jsonPath: $.Licenses.*.validFrom
@@ -479,6 +483,8 @@ serviceMaps:
             - jsonPath: $.Licenses.*.licenseNumber
 
             - jsonPath: $.Licenses.*.issuedDate
+            
+            - jsonPath: $.Licenses.*.financialYear
 
             - jsonPath: $.Licenses.*.action
 

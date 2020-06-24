@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.egov.pl.models.PetLicenseRequest;
 import org.egov.pl.repository.ServiceRequestRepository;
+import org.egov.pl.util.AnimalCategoryUtil;
 import org.egov.pl.util.PLConstants;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +24,15 @@ public class MDMSValidator {
 
 	private ServiceRequestRepository requestRepository;
 
-	private PetUtil util;
+	private AnimalCategoryUtil animalCategoryUtil;
 
 	private ServiceRequestRepository serviceRequestRepository;
 
 	@Autowired
-	public MDMSValidator(ServiceRequestRepository requestRepository, PetUtil util,
+	public MDMSValidator(ServiceRequestRepository requestRepository, AnimalCategoryUtil animalCategoryUtil,
 			ServiceRequestRepository serviceRequestRepository) {
 		this.requestRepository = requestRepository;
-		this.util = util;
+		this.animalCategoryUtil = animalCategoryUtil;
 		this.serviceRequestRepository = serviceRequestRepository;
 	}
 

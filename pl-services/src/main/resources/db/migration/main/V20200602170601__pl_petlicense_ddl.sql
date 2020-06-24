@@ -8,6 +8,7 @@ CREATE TABLE eg_pl_PetLicense(
   oldLicenseNumber character varying(64),
   applicationDate bigint,
   issuedDate bigint,
+  financialYear character varying(64),
   validFrom bigint,
   validTo bigint,
   action character varying(64),
@@ -148,6 +149,7 @@ CREATE TABLE eg_pl_PetLicense_audit(
   oldLicenseNumber character varying(64),
   applicationDate bigint,
   issuedDate bigint,
+  financialYear character varying(64),
   validFrom bigint,
   validTo bigint,
   action character varying(64),
@@ -155,6 +157,5 @@ CREATE TABLE eg_pl_PetLicense_audit(
   createdBy character varying(64),
   lastModifiedBy character varying(64),
   createdTime bigint,
-  lastModifiedTime bigint,
-  tradeName character varying(256)
+  lastModifiedTime bigint
 );

@@ -1,10 +1,16 @@
 package org.egov.pl.consumer;
 
+import static org.egov.pl.util.PLConstants.businessService_BPA;
+import static org.egov.pl.util.PLConstants.businessService_PL;
+
 import java.util.HashMap;
 
 import org.egov.pl.models.PetLicenseRequest;
 import org.egov.pl.service.PetLicenseService;
 import org.egov.pl.service.notification.PLNotificationService;
+import org.egov.pl.service.PetLicenseService;
+import org.egov.pl.service.notification.PLNotificationService;
+import org.egov.pl.models.PetLicenseRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -40,8 +46,21 @@ public class PetLicenseConsumer {
         } catch (final Exception e) {
             log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);
         }
-        log.info("PetLicense Received: "+petLicenseRequest.getLicenses().get(0).getApplicationNumber());
-   
-       // notificationService.process(petLicenseRequest);
+        log.info("pet License Received: "+petLicenseRequest.getLicenses().get(0).getApplicationNumber());
+        if (!petLicenseRequest.getLicenses().isEmpty()) {
+            String businessService = petLicenseRequest.getLicenses().get(0).getBusinessService();
+            if (businessService == null)
+                businessService = businessService_PL;
+            switch (businessService) {
+                case businessService_BPA:
+                    try {
+                        petLicenseService.checkEndStateAndAddBPARoles(petLicenseRequest);
+                    } catch (final Exception e) {
+                        log.error("Error occurred while adding roles for BPA user " + e);
+                    }
+                    break;
+            }
+        }
+        notificationService.process(petLicenseRequest);
     }
 }
